@@ -1,0 +1,820 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8" />
+<meta name="viewport" content="width=device-width, initial-scale=1.0" />
+<title>SENTINEL-X 2.0 — Project Report</title>
+<style>
+  *, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
+  body {
+    font-family: -apple-system, "Segoe UI", system-ui, sans-serif;
+    font-size: 14px;
+    line-height: 1.7;
+    color: #1f2328;
+    background: #ffffff;
+    max-width: 860px;
+    margin: 0 auto;
+    padding: 48px 36px 72px;
+  }
+  /* COVER */
+  .cover {
+    background: linear-gradient(135deg, #0a0e1a 0%, #0d1224 60%, #111827 100%);
+    color: #e2e8f0;
+    border-radius: 14px;
+    padding: 52px 44px 44px;
+    margin-bottom: 40px;
+    position: relative;
+    overflow: hidden;
+  }
+  .cover::before {
+    content: '';
+    position: absolute;
+    top: -70px; right: -70px;
+    width: 260px; height: 260px;
+    border-radius: 50%;
+    border: 50px solid rgba(6,182,212,0.07);
+    pointer-events: none;
+  }
+  .cover-logo { display: flex; align-items: center; gap: 16px; margin-bottom: 32px; }
+  .shield {
+    width: 56px; height: 56px;
+    background: rgba(6,182,212,0.15);
+    border: 1.5px solid rgba(6,182,212,0.4);
+    border-radius: 13px;
+    display: flex; align-items: center; justify-content: center;
+    flex-shrink: 0;
+  }
+  .shield svg { width: 30px; height: 30px; }
+  .cover-logo-text h1 { font-size: 24px; font-weight: 800; color: #fff; letter-spacing: -0.5px; }
+  .cover-logo-text p  { font-size: 12px; color: #22d3ee; margin-top: 3px; }
+  .cover-title { font-size: 30px; font-weight: 700; color: #fff; line-height: 1.2; margin-bottom: 8px; }
+  .cover-sub   { font-size: 15px; color: #94a3b8; margin-bottom: 32px; }
+  .cover-meta  { display: grid; grid-template-columns: repeat(3,1fr); gap: 16px; }
+  .cm-item .lbl { font-size: 10px; color: #475569; text-transform: uppercase; letter-spacing: 0.08em; }
+  .cm-item .val { font-size: 13px; color: #cbd5e1; font-weight: 500; margin-top: 3px; }
+  /* HEADINGS */
+  h2 {
+    font-size: 18px; font-weight: 700; color: #0f172a;
+    margin: 40px 0 14px;
+    padding-bottom: 8px;
+    border-bottom: 2px solid #e5e7eb;
+  }
+  h2 .num { color: #0891b2; margin-right: 8px; }
+  h3 { font-size: 14px; font-weight: 700; color: #1e293b; margin: 22px 0 8px; }
+  p  { color: #374151; margin-bottom: 11px; }
+  /* STAT GRID */
+  .stat-grid { display: grid; grid-template-columns: repeat(3,1fr); gap: 12px; margin: 18px 0 24px; }
+  .stat-card { border: 1px solid #e5e7eb; border-radius: 10px; padding: 16px; background: #f8fafc; }
+  .stat-card .val { font-size: 30px; font-weight: 800; color: #0891b2; line-height: 1; }
+  .stat-card .lbl { font-size: 11px; color: #64748b; margin-top: 5px; }
+  /* TABLES */
+  table { width: 100%; border-collapse: collapse; margin: 14px 0 22px; font-size: 13px; }
+  th { background: #f1f5f9; text-align: left; padding: 9px 12px;
+       font-size: 11px; font-weight: 600; color: #475569;
+       text-transform: uppercase; letter-spacing: 0.05em; }
+  td { padding: 9px 12px; border-bottom: 1px solid #f1f5f9; color: #374151; vertical-align: top; }
+  tr:last-child td { border-bottom: none; }
+  tr:hover td { background: #fafafa; }
+  /* BADGES */
+  .badge {
+    display: inline-block;
+    padding: 2px 8px; border-radius: 4px;
+    font-size: 11px; font-weight: 600;
+  }
+  .b-critical { background:#fef2f2; color:#b91c1c; border:1px solid #fecaca; }
+  .b-high     { background:#fff7ed; color:#c2410c; border:1px solid #fed7aa; }
+  .b-moderate { background:#fffbeb; color:#b45309; border:1px solid #fde68a; }
+  .b-low      { background:#f0fdf4; color:#15803d; border:1px solid #bbf7d0; }
+  .b-cyan     { background:#ecfeff; color:#0e7490; border:1px solid #a5f3fc; }
+  .b-violet   { background:#f5f3ff; color:#6d28d9; border:1px solid #ddd6fe; }
+  .b-gray     { background:#f8fafc; color:#475569; border:1px solid #e2e8f0; }
+  .b-ok       { background:#f0fdf4; color:#166534; border:1px solid #bbf7d0; }
+  /* CODE */
+  code {
+    font-family: ui-monospace, SFMono-Regular, Consolas, monospace;
+    font-size: 12px; background: #f1f5f9; color: #0e7490;
+    padding: 1px 5px; border-radius: 4px;
+  }
+  pre {
+    background: #0f172a; color: #e2e8f0; border-radius: 10px;
+    padding: 16px 18px; font-size: 12px;
+    font-family: ui-monospace, SFMono-Regular, Consolas, monospace;
+    overflow-x: auto; margin: 12px 0 18px; line-height: 1.7;
+  }
+  /* CALLOUTS */
+  .callout {
+    border-left: 3px solid #0891b2; background: #f0fdff;
+    padding: 12px 16px; border-radius: 0 8px 8px 0;
+    margin: 14px 0; font-size: 13px; color: #164e63;
+  }
+  .callout.warn { border-color: #f59e0b; background: #fffbeb; color: #78350f; }
+  .callout.success { border-color: #22c55e; background: #f0fdf4; color: #14532d; }
+  /* ARCH DIAGRAM */
+  .arch {
+    border: 1px solid #e5e7eb; border-radius: 10px;
+    padding: 24px; margin: 16px 0 24px;
+    background: #fafafa; text-align: center;
+  }
+  .arch-row { display: flex; justify-content: center; align-items: center; gap: 10px; margin: 8px 0; flex-wrap: wrap; }
+  .arch-box {
+    padding: 10px 16px; border-radius: 9px;
+    font-size: 12px; font-weight: 600; border: 1.5px solid;
+    min-width: 130px; text-align: center; line-height: 1.4;
+  }
+  .arch-arrow { font-size: 20px; color: #94a3b8; }
+  .box-fe  { background:#ecfeff; border-color:#06b6d4; color:#0e7490; }
+  .box-be  { background:#f5f3ff; border-color:#8b5cf6; color:#5b21b6; }
+  .box-db  { background:#f0fdf4; border-color:#22c55e; color:#15803d; }
+  .box-ext { background:#fff7ed; border-color:#f97316; color:#9a3412; }
+  .box-sec { background:#fef2f2; border-color:#ef4444; color:#991b1b; }
+  /* SCORE BARS */
+  .score-row { display:flex; align-items:center; gap:10px; margin:6px 0; font-size:13px; }
+  .score-lbl { width:170px; flex-shrink:0; color:#374151; }
+  .score-bg  { flex:1; background:#e5e7eb; border-radius:4px; height:10px; }
+  .score-fill{ height:10px; border-radius:4px; }
+  .score-val { width:44px; text-align:right; color:#475569; font-weight:600; font-size:12px; }
+  /* LISTS */
+  ul { padding-left: 20px; margin: 8px 0 14px; }
+  li { margin-bottom: 6px; color: #374151; }
+  /* TOC */
+  .toc-grid { display:grid; grid-template-columns:1fr 1fr; gap:4px 24px; margin:12px 0; }
+  .toc-item { font-size:13px; color:#374151; padding:4px 0; border-bottom:1px solid #f1f5f9; }
+  .toc-item .n { color:#0891b2; font-weight:700; margin-right:8px; }
+  /* DIVIDER */
+  hr { border:none; border-top:1px dashed #e5e7eb; margin:36px 0; }
+  /* FOOTER */
+  .footer {
+    margin-top:64px; padding-top:16px;
+    border-top:1px solid #e5e7eb;
+    text-align:center; font-size:12px; color:#9ca3af;
+  }
+</style>
+</head>
+<body>
+
+<!-- ════════════════════════════════════════ COVER ═══ -->
+<div class="cover">
+  <div class="cover-logo">
+    <div class="shield">
+      <svg viewBox="0 0 24 24" fill="none" stroke="#22d3ee" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+        <path d="M12 2L3 7v5c0 5.25 3.75 10.15 9 11.35C17.25 22.15 21 17.25 21 12V7L12 2z"/>
+        <polyline points="9 12 11 14 15 10" stroke="#22d3ee"/>
+      </svg>
+    </div>
+    <div class="cover-logo-text">
+      <h1>SENTINEL-X 2.0</h1>
+      <p>"See the Threat. Understand the Risk. Act with Confidence."</p>
+    </div>
+  </div>
+  <div class="cover-title">Project Report</div>
+  <div class="cover-sub">Intelligent Cyber Threat Intelligence, Correlation &amp; Investigation Platform<br/>Second-Year Cyber Security Academic Project</div>
+  <div class="cover-meta">
+    <div class="cm-item"><div class="lbl">Subject Area</div><div class="val">Cybersecurity / Threat Intelligence</div></div>
+    <div class="cm-item"><div class="lbl">Application Type</div><div class="val">Full-Stack Web Application</div></div>
+    <div class="cm-item"><div class="lbl">Version</div><div class="val">2.0.0</div></div>
+    <div class="cm-item"><div class="lbl">Backend</div><div class="val">Python 3.11 · Flask 3.x</div></div>
+    <div class="cm-item"><div class="lbl">Frontend</div><div class="val">React 18 · TypeScript · Tailwind CSS</div></div>
+    <div class="cm-item"><div class="lbl">Database</div><div class="val">SQLite · SQLAlchemy ORM</div></div>
+  </div>
+</div>
+
+<!-- ════════════════════════════════ TABLE OF CONTENTS ═══ -->
+<h2><span class="num">0.</span>Table of Contents</h2>
+<div class="toc-grid">
+  <div class="toc-item"><span class="n">1</span>Executive Summary</div>
+  <div class="toc-item"><span class="n">2</span>Problem Statement</div>
+  <div class="toc-item"><span class="n">3</span>Project Objectives</div>
+  <div class="toc-item"><span class="n">4</span>System Architecture</div>
+  <div class="toc-item"><span class="n">5</span>Technology Stack</div>
+  <div class="toc-item"><span class="n">6</span>Database Design</div>
+  <div class="toc-item"><span class="n">7</span>Core Features</div>
+  <div class="toc-item"><span class="n">8</span>Intelligence Providers</div>
+  <div class="toc-item"><span class="n">9</span>Risk Scoring Methodology</div>
+  <div class="toc-item"><span class="n">10</span>Correlation Engine</div>
+  <div class="toc-item"><span class="n">11</span>Recommendation Engine</div>
+  <div class="toc-item"><span class="n">12</span>Security Controls</div>
+  <div class="toc-item"><span class="n">13</span>Application Pages</div>
+  <div class="toc-item"><span class="n">14</span>Demo Data &amp; Test Results</div>
+  <div class="toc-item"><span class="n">15</span>Installation Guide</div>
+  <div class="toc-item"><span class="n">16</span>API Reference</div>
+  <div class="toc-item"><span class="n">17</span>Known Limitations</div>
+  <div class="toc-item"><span class="n">18</span>Conclusion</div>
+</div>
+
+<hr/>
+
+<!-- ════════════════════════════════ 1. EXEC SUMMARY ═══ -->
+<h2><span class="num">1.</span>Executive Summary</h2>
+<p>
+  SENTINEL-X 2.0 is a full-stack cybersecurity web application developed as a second-year Cyber Security academic project.
+  It provides a unified Security Operations Centre (SOC) interface that allows analysts to investigate suspicious
+  <strong>Indicators of Compromise (IoCs)</strong> — including IP addresses, domains, URLs, and file hashes —
+  by querying multiple external threat intelligence sources, correlating their findings, and generating
+  explainable risk scores with concrete analyst recommendations.
+</p>
+<p>
+  The platform demonstrates practical application of threat intelligence concepts including multi-source correlation,
+  explainable AI-style scoring, SSRF protection, audit logging, and structured evidence management.
+  It ships with 20 pre-loaded demo investigation scenarios covering all risk classifications and indicator types,
+  and is fully demonstrable in a college environment without any external API keys.
+</p>
+
+<div class="stat-grid">
+  <div class="stat-card"><div class="val">20</div><div class="lbl">Pre-loaded Demo Investigations</div></div>
+  <div class="stat-card"><div class="val">12</div><div class="lbl">Database Models</div></div>
+  <div class="stat-card"><div class="val">47</div><div class="lbl">Automated Tests — All Passing</div></div>
+  <div class="stat-card"><div class="val">8</div><div class="lbl">Application Pages</div></div>
+  <div class="stat-card"><div class="val">18</div><div class="lbl">REST API Endpoints</div></div>
+  <div class="stat-card"><div class="val">2</div><div class="lbl">Intelligence Providers Integrated</div></div>
+</div>
+
+<!-- ════════════════════════════════ 2. PROBLEM ═══ -->
+<h2><span class="num">2.</span>Problem Statement</h2>
+<p>
+  Modern organisations face a continuous flood of potential cyber threats. Security analysts must frequently
+  determine whether a given IP address, domain, URL, or file hash is malicious — but the available intelligence
+  is scattered across multiple providers, often contradictory, and delivered without actionable context.
+</p>
+<p><strong>Existing limitations in freely available tools:</strong></p>
+<ul>
+  <li>Single-source lookups provide no cross-validation — a clean result from one source may be flagged by another.</li>
+  <li>Raw API responses require significant analyst expertise to interpret without additional tooling.</li>
+  <li>No open-source platform explicitly surfaces <em>conflicts</em> between intelligence sources with explanations.</li>
+  <li>Risk scores, where they exist, are opaque — analysts cannot see why a score was assigned.</li>
+  <li>Case management is entirely separate from investigation workflows in most free tools.</li>
+  <li>Demonstration and training are impossible when external APIs are unavailable or rate-limited.</li>
+</ul>
+<p>
+  SENTINEL-X 2.0 addresses all of these gaps in a single, locally deployable, open-source platform.
+</p>
+
+<!-- ════════════════════════════════ 3. OBJECTIVES ═══ -->
+<h2><span class="num">3.</span>Project Objectives</h2>
+<table>
+  <thead><tr><th>#</th><th>Objective</th><th>Status</th></tr></thead>
+  <tbody>
+    <tr><td>O1</td><td>Investigate IPv4, IPv6, domains, URLs, MD5, SHA1, and SHA256 indicators</td><td><span class="badge b-ok">✓ Complete</span></td></tr>
+    <tr><td>O2</td><td>Integrate VirusTotal v3 API with full normalisation</td><td><span class="badge b-ok">✓ Complete</span></td></tr>
+    <tr><td>O3</td><td>Integrate AlienVault OTX API with full normalisation</td><td><span class="badge b-ok">✓ Complete</span></td></tr>
+    <tr><td>O4</td><td>Correlation engine detecting source agreement, conflict, and missing data</td><td><span class="badge b-ok">✓ Complete</span></td></tr>
+    <tr><td>O5</td><td>Explainable risk scoring (0–100) with per-factor breakdown</td><td><span class="badge b-ok">✓ Complete</span></td></tr>
+    <tr><td>O6</td><td>Analyst recommendation engine based on risk class and indicator type</td><td><span class="badge b-ok">✓ Complete</span></td></tr>
+    <tr><td>O7</td><td>Case management with status tracking and activity timeline</td><td><span class="badge b-ok">✓ Complete</span></td></tr>
+    <tr><td>O8</td><td>Interactive indicator relationship graph (React Flow)</td><td><span class="badge b-ok">✓ Complete</span></td></tr>
+    <tr><td>O9</td><td>JSON investigation report export</td><td><span class="badge b-ok">✓ Complete</span></td></tr>
+    <tr><td>O10</td><td>Historical snapshot storage and change comparison</td><td><span class="badge b-ok">✓ Complete</span></td></tr>
+    <tr><td>O11</td><td>20-scenario demo mode — fully functional without API keys</td><td><span class="badge b-ok">✓ Complete</span></td></tr>
+    <tr><td>O12</td><td>SSRF protection, rate limiting, input validation, audit logging</td><td><span class="badge b-ok">✓ Complete</span></td></tr>
+    <tr><td>O13</td><td>Automated test suite covering all core business logic</td><td><span class="badge b-ok">✓ 47/47 Pass</span></td></tr>
+    <tr><td>O14</td><td>Persistent SQLite database with 12 relational models</td><td><span class="badge b-ok">✓ Complete</span></td></tr>
+    <tr><td>O15</td><td>Professional dark-theme SOC UI with responsive navigation</td><td><span class="badge b-ok">✓ Complete</span></td></tr>
+  </tbody>
+</table>
+
+<!-- ════════════════════════════════ 4. ARCHITECTURE ═══ -->
+<h2><span class="num">4.</span>System Architecture</h2>
+<p>
+  SENTINEL-X 2.0 follows a standard three-tier web architecture. The React SPA is served as static files
+  by Flask, making it a single-process deployment. The frontend communicates with the backend exclusively
+  through a documented REST API, with all external provider queries handled server-side to protect API keys
+  and prevent SSRF attacks.
+</p>
+
+<div class="arch">
+  <div style="font-size:11px;color:#64748b;margin-bottom:14px;font-weight:600;letter-spacing:0.07em;">THREE-TIER ARCHITECTURE &amp; DATA FLOW</div>
+
+  <div class="arch-row">
+    <div class="arch-box box-fe" style="min-width:300px;">
+      React SPA (Presentation Layer)<br/>
+      <span style="font-weight:400;font-size:11px;">React 18 · TypeScript · Tailwind CSS · React Flow · Recharts</span>
+    </div>
+  </div>
+  <div class="arch-row"><span class="arch-arrow">↕ HTTP/REST (JSON) ↕</span></div>
+  <div class="arch-row">
+    <div class="arch-box box-sec">Rate Limiter<br/><span style="font-weight:400;font-size:11px;">Flask-Limiter</span></div>
+    <div class="arch-box box-be" style="min-width:160px;">Flask REST API<br/><span style="font-weight:400;font-size:11px;">18 Endpoints · Blueprints</span></div>
+    <div class="arch-box box-sec">Input Validator<br/><span style="font-weight:400;font-size:11px;">SSRF · Type Detection</span></div>
+  </div>
+  <div class="arch-row"><span class="arch-arrow">↓ Business Logic ↓</span></div>
+  <div class="arch-row">
+    <div class="arch-box box-be">Correlation Engine</div>
+    <div class="arch-box box-be">Risk Scoring Module</div>
+    <div class="arch-box box-be">Recommendation Engine</div>
+  </div>
+  <div class="arch-row"><span class="arch-arrow">↓ Provider Adapters (server-side only) ↓</span></div>
+  <div class="arch-row">
+    <div class="arch-box box-ext">VirusTotal v3 API<br/><span style="font-weight:400;font-size:11px;">External · Configurable</span></div>
+    <div class="arch-box box-ext">AlienVault OTX API<br/><span style="font-weight:400;font-size:11px;">External · Configurable</span></div>
+  </div>
+  <div class="arch-row"><span class="arch-arrow">↕ SQLAlchemy ORM ↕</span></div>
+  <div class="arch-row">
+    <div class="arch-box box-db" style="min-width:220px;">SQLite Database (Data Layer)<br/><span style="font-weight:400;font-size:11px;">12 Models · sentinel_x.db</span></div>
+  </div>
+</div>
+
+<h3>Investigation Data Flow</h3>
+<pre>
+1.  Analyst submits indicator value (IP / domain / URL / hash)
+2.  Input validation  →  max 2048 chars, non-empty
+3.  Type detection    →  ipaddress module + regex patterns
+4.  SSRF check        →  private/loopback/link-local IPs blocked
+5.  Normalisation     →  canonical form (lowercase, compressed IPv6, etc.)
+6.  Provider queries  →  VirusTotal API  +  AlienVault OTX API  (parallel)
+7.  Normalisation     →  provider responses → common EvidenceItem format
+8.  Correlation       →  agreement / conflict / missing detection
+9.  Risk scoring      →  weighted 0-100 score + contributing factors
+10. Recommendation    →  rule-based action list per risk class + itype
+11. Persistence       →  Investigation + SourceResults + EvidenceItems + Snapshot
+12. JSON response     →  frontend renders all result panels
+</pre>
+
+<!-- ════════════════════════════════ 5. TECH STACK ═══ -->
+<h2><span class="num">5.</span>Technology Stack</h2>
+<table>
+  <thead><tr><th>Layer</th><th>Technology</th><th>Version</th><th>Role</th></tr></thead>
+  <tbody>
+    <tr><td rowspan="7" style="font-weight:600;color:#0e7490;">Frontend</td><td>React</td><td>18.2</td><td>Component-based UI framework, SPA routing</td></tr>
+    <tr><td>TypeScript</td><td>5.3</td><td>Static typing across all frontend code</td></tr>
+    <tr><td>Vite</td><td>5.1</td><td>Build tool, dev server with hot-module reloading</td></tr>
+    <tr><td>Tailwind CSS</td><td>3.4</td><td>Utility-first dark-theme styling</td></tr>
+    <tr><td>Recharts</td><td>2.12</td><td>Risk distribution pie chart, indicator type bar chart</td></tr>
+    <tr><td>React Flow</td><td>11.11</td><td>Interactive indicator relationship graph canvas</td></tr>
+    <tr><td>Axios</td><td>1.6</td><td>HTTP client with session-cookie credential support</td></tr>
+    <tr><td rowspan="6" style="font-weight:600;color:#5b21b6;">Backend</td><td>Python</td><td>3.11</td><td>Application language</td></tr>
+    <tr><td>Flask</td><td>3.1</td><td>Web framework, routing, session management</td></tr>
+    <tr><td>Flask-SQLAlchemy</td><td>3.1</td><td>ORM, database session management</td></tr>
+    <tr><td>Flask-Limiter</td><td>4.1</td><td>Per-IP rate limiting on all endpoints</td></tr>
+    <tr><td>Flask-CORS</td><td>4.0</td><td>Cross-origin request handling with credentials</td></tr>
+    <tr><td>Werkzeug</td><td>3.1</td><td>Password hashing (PBKDF2), WSGI utilities</td></tr>
+    <tr><td rowspan="2" style="font-weight:600;color:#15803d;">Data</td><td>SQLite</td><td>3.x</td><td>Local relational database — zero configuration</td></tr>
+    <tr><td>SQLAlchemy ORM</td><td>2.1</td><td>Model definitions, parameterised queries, migrations</td></tr>
+    <tr><td rowspan="2" style="font-weight:600;color:#9a3412;">Testing/Dev</td><td>Pytest</td><td>9.1</td><td>47-test backend test suite</td></tr>
+    <tr><td>uv</td><td>0.13</td><td>Python environment &amp; dependency manager</td></tr>
+  </tbody>
+</table>
+
+<!-- ════════════════════════════════ 6. DATABASE ═══ -->
+<h2><span class="num">6.</span>Database Design</h2>
+<p>
+  The database consists of 12 SQLAlchemy ORM models. The <code>Investigation</code> model is the central entity,
+  linking an <code>Indicator</code> (the IoC being examined) to provider results, evidence items, and snapshots.
+  Cases provide a management layer that groups multiple indicators and investigations together.
+</p>
+<table>
+  <thead><tr><th>Model</th><th>Primary Key</th><th>Key Fields</th><th>Purpose</th></tr></thead>
+  <tbody>
+    <tr><td><code>User</code></td><td>Integer</td><td>username, email, password_hash, role</td><td>Analyst accounts (admin / analyst roles)</td></tr>
+    <tr><td><code>Indicator</code></td><td>Integer</td><td>value, itype, normalized, first_seen, last_seen, is_demo</td><td>Canonical record of a unique IoC</td></tr>
+    <tr><td><code>Investigation</code></td><td>UUID String</td><td>indicator_id, risk_score, risk_class, summary, data_source, is_demo</td><td>One investigation run linked to an indicator</td></tr>
+    <tr><td><code>SourceResult</code></td><td>Integer</td><td>investigation_id, provider, status, raw_response, normalized</td><td>Per-provider raw and normalised response (JSON)</td></tr>
+    <tr><td><code>EvidenceItem</code></td><td>UUID String</td><td>investigation_id, provider, evidence_type, value, confidence</td><td>Individual evidence facts extracted from responses</td></tr>
+    <tr><td><code>IndicatorRelationship</code></td><td>Integer</td><td>source_id, target_id, rel_type, provider, confidence, evidence_ref</td><td>Directed edges in the relationship graph</td></tr>
+    <tr><td><code>Case</code></td><td>UUID String</td><td>title, severity, status, assigned_to, created_by, is_demo</td><td>Investigation case container</td></tr>
+    <tr><td><code>CaseIndicator</code></td><td>Integer</td><td>case_id, indicator_id, added_by, added_at</td><td>Many-to-many: cases ↔ indicators</td></tr>
+    <tr><td><code>AnalystNote</code></td><td>Integer</td><td>case_id, author_id, content, created_at</td><td>Free-text analyst notes attached to cases</td></tr>
+    <tr><td><code>ActivityEvent</code></td><td>Integer</td><td>case_id, user_id, action, detail, timestamp</td><td>Audit trail — all case state changes and actions</td></tr>
+    <tr><td><code>ReportMetadata</code></td><td>UUID String</td><td>investigation_id, report_format, generated_by, generated_at</td><td>Record of exported investigation reports</td></tr>
+    <tr><td><code>InvestigationSnapshot</code></td><td>Integer</td><td>investigation_id, snapshot_data (JSON), taken_at</td><td>Point-in-time copy for change comparison</td></tr>
+  </tbody>
+</table>
+<div class="callout">
+  All timestamps are stored in UTC. Investigations and Cases use UUID string primary keys.
+  A unique constraint on <code>(value, itype)</code> prevents duplicate indicator records.
+  No API secrets are stored in the database — all provider keys remain in environment variables.
+</div>
+
+<!-- ════════════════════════════════ 7. FEATURES ═══ -->
+<h2><span class="num">7.</span>Core Features</h2>
+
+<h3>7.1 Automatic Indicator Detection &amp; Normalisation</h3>
+<p>The backend automatically identifies indicator type from the submitted value — no manual selection required.</p>
+<table>
+  <thead><tr><th>Type</th><th>Detection Method</th><th>Normalisation Applied</th></tr></thead>
+  <tbody>
+    <tr><td><span class="badge b-cyan">IPv4</span></td><td><code>ipaddress.ip_address()</code> → version 4</td><td>Canonical dotted-decimal (e.g. <code>1.2.3.4</code>)</td></tr>
+    <tr><td><span class="badge b-cyan">IPv6</span></td><td><code>ipaddress.ip_address()</code> → version 6</td><td>Compressed notation (e.g. <code>2001:db8::1</code>)</td></tr>
+    <tr><td><span class="badge b-violet">Domain</span></td><td>RFC-compliant regex pattern</td><td>Lowercase, trailing dot stripped</td></tr>
+    <tr><td><span class="badge b-violet">URL</span></td><td><code>^https?://</code> prefix match</td><td>Preserved as submitted</td></tr>
+    <tr><td><span class="badge b-gray">MD5</span></td><td>Exactly 32 hexadecimal characters</td><td>Lowercase</td></tr>
+    <tr><td><span class="badge b-gray">SHA1</span></td><td>Exactly 40 hexadecimal characters</td><td>Lowercase</td></tr>
+    <tr><td><span class="badge b-gray">SHA256</span></td><td>Exactly 64 hexadecimal characters</td><td>Lowercase</td></tr>
+  </tbody>
+</table>
+
+<h3>7.2 Interactive Relationship Graph</h3>
+<p>
+  The Graph page uses <strong>React Flow v11</strong> to render an interactive node-edge canvas.
+  Nodes are colour-coded by indicator type, edges carry relationship type labels and provider attribution.
+  High-confidence edges (confidence &gt; 0.7) are animated with a dashed stroke.
+  Users can zoom, pan, drag nodes, and view the minimap. The graph is populated from
+  <code>IndicatorRelationship</code> records stored in the database.
+</p>
+
+<h3>7.3 Case Management</h3>
+<p>
+  Cases support five statuses:
+  <span class="badge b-gray">New</span>
+  <span class="badge b-cyan">Investigating</span>
+  <span class="badge b-high">Escalated</span>
+  <span class="badge b-low">Resolved</span>
+  <span class="badge b-gray">Closed</span>.
+  Each case tracks: linked indicators, analyst notes with author and timestamp, severity level,
+  assigned analyst, and a full chronological activity timeline.
+  All status changes are written to the <code>ActivityEvent</code> audit table with actor and timestamp.
+</p>
+
+<h3>7.4 JSON Report Export</h3>
+<p>
+  Every investigation can be downloaded as a structured JSON report (<code>GET /api/reports/{id}/json</code>).
+  Reports contain: unique report ID, investigation ID, indicator details, UTC timestamps, risk assessment,
+  source-by-source normalised results, evidence items with confidence scores, correlation findings,
+  analyst recommendations, data provenance label, and a legal notice clarifying evidentiary limitations.
+</p>
+
+<h3>7.5 Investigation Change Monitor</h3>
+<p>
+  Every investigation automatically saves an <code>InvestigationSnapshot</code> at creation time.
+  The <code>GET /api/investigations/{id}/compare</code> endpoint compares the two most recent snapshots,
+  returning the risk score delta, whether the risk class changed, and the full snapshot payloads for
+  side-by-side comparison in the frontend.
+</p>
+
+<h3>7.6 Threat Intelligence Feed</h3>
+<p>
+  The Feed page provides a paginated, searchable, filterable view of all investigated indicators.
+  Filters include indicator type, risk class, and free-text search on the indicator value.
+  Each row shows the indicator, type badge, risk badge, data source label, and investigation timestamp.
+</p>
+
+<!-- ════════════════════════════════ 8. PROVIDERS ═══ -->
+<h2><span class="num">8.</span>Intelligence Providers</h2>
+<table>
+  <thead><tr><th>Provider</th><th>API</th><th>Supported Indicator Types</th><th>Data Extracted</th></tr></thead>
+  <tbody>
+    <tr>
+      <td><strong>VirusTotal</strong></td>
+      <td>v3 REST</td>
+      <td>IPv4, IPv6, Domain, URL, MD5, SHA1, SHA256</td>
+      <td>Malicious / suspicious / harmless / undetected engine counts, total engines, reputation score, tags, categories, last analysis date</td>
+    </tr>
+    <tr>
+      <td><strong>AlienVault OTX</strong></td>
+      <td>v1 REST</td>
+      <td>IPv4, IPv6, Domain, URL, MD5, SHA1, SHA256</td>
+      <td>Pulse count and names, threat tags, malware family names, adversary attribution, ASN, country code, reputation</td>
+    </tr>
+  </tbody>
+</table>
+<p>
+  Both providers are configured via environment variables (<code>VT_API_KEY</code>, <code>OTX_API_KEY</code>).
+  When unconfigured, the Settings page displays "Not configured" with setup instructions.
+  Each adapter independently handles: rate limiting (HTTP 429), authentication errors (401),
+  not-found (404), connection timeouts, and general exceptions —
+  so one provider failing never blocks results from the other.
+</p>
+<div class="callout">
+  All provider requests are made server-side only. API keys are never exposed to the browser,
+  logged to disk, or stored in the database.
+</div>
+
+<!-- ════════════════════════════════ 9. RISK SCORING ═══ -->
+<h2><span class="num">9.</span>Risk Scoring Methodology</h2>
+<p>
+  The risk scoring module produces a numeric score from 0 to 100 using a weighted, capped factor model.
+  Scores are then classified into four application-defined bands. If no provider returns usable data,
+  the score is set to <strong>Insufficient Evidence</strong> rather than defaulting to zero.
+</p>
+
+<div style="margin:16px 0 22px;">
+  <div class="score-row">
+    <span class="score-lbl"><span class="badge b-low">Low (0 – 19)</span></span>
+    <div class="score-bg"><div class="score-fill" style="width:19%;background:#22c55e;"></div></div>
+    <span class="score-val">0–19</span>
+  </div>
+  <div class="score-row">
+    <span class="score-lbl"><span class="badge b-moderate">Moderate (20 – 49)</span></span>
+    <div class="score-bg"><div class="score-fill" style="width:49%;background:#f59e0b;"></div></div>
+    <span class="score-val">20–49</span>
+  </div>
+  <div class="score-row">
+    <span class="score-lbl"><span class="badge b-high">High (50 – 79)</span></span>
+    <div class="score-bg"><div class="score-fill" style="width:79%;background:#f97316;"></div></div>
+    <span class="score-val">50–79</span>
+  </div>
+  <div class="score-row">
+    <span class="score-lbl"><span class="badge b-critical">Critical (80 – 100)</span></span>
+    <div class="score-bg"><div class="score-fill" style="width:100%;background:#ef4444;"></div></div>
+    <span class="score-val">80–100</span>
+  </div>
+</div>
+
+<table>
+  <thead><tr><th>Scoring Factor</th><th>Weight</th><th>Cap</th><th>Effect on Score</th></tr></thead>
+  <tbody>
+    <tr><td>VirusTotal malicious engine detections</td><td>+3.0 per engine</td><td>40 pts maximum</td><td>Increases risk</td></tr>
+    <tr><td>VirusTotal suspicious engine detections</td><td>+1.5 per engine</td><td>15 pts maximum</td><td>Increases risk</td></tr>
+    <tr><td>AlienVault OTX pulse associations</td><td>+4.0 per pulse</td><td>30 pts maximum</td><td>Increases risk</td></tr>
+    <tr><td>Negative provider reputation score</td><td>+0.5 per point below 0</td><td>15 pts maximum</td><td>Increases risk</td></tr>
+    <tr><td>Multi-source agreement (both malicious)</td><td>+10.0 flat bonus</td><td>—</td><td>Increases confidence</td></tr>
+    <tr><td>Source conflict detected</td><td>−5.0 flat penalty</td><td>—</td><td>Reduces certainty</td></tr>
+    <tr><td>Single source only</td><td>−8.0 flat penalty</td><td>—</td><td>Reduces certainty</td></tr>
+  </tbody>
+</table>
+<div class="callout warn">
+  These classification bands and weights are project-specific definitions and have not been validated
+  against a labelled threat intelligence dataset. The score represents <em>observed evidence strength</em>,
+  not a statistically validated probability of maliciousness.
+</div>
+
+<!-- ════════════════════════════════ 10. CORRELATION ═══ -->
+<h2><span class="num">10.</span>Correlation Engine</h2>
+<p>
+  The correlation engine compares normalised responses from all queried providers and outputs a structured
+  correlation report. It identifies five possible agreement states:
+</p>
+<table>
+  <thead><tr><th>State</th><th>Condition</th><th>UI Presentation</th></tr></thead>
+  <tbody>
+    <tr><td><span class="badge b-critical">agree_malicious</span></td><td>All active sources flag the indicator as malicious</td><td>Red border panel with alert icon</td></tr>
+    <tr><td><span class="badge b-low">agree_benign</span></td><td>All active sources return no malicious signals</td><td>Green border panel with check icon</td></tr>
+    <tr><td><span class="badge b-moderate">conflict</span></td><td>Sources disagree — at least one flags malicious, another does not</td><td>Amber panel with warning icon and per-provider breakdown</td></tr>
+    <tr><td><span class="badge b-cyan">single_source</span></td><td>Only one provider returned usable data</td><td>Blue panel with info icon noting reduced confidence</td></tr>
+    <tr><td><span class="badge b-gray">no_data</span></td><td>No provider returned any usable data</td><td>Grey panel — score set to Insufficient Evidence</td></tr>
+  </tbody>
+</table>
+<p>
+  The engine also identifies <strong>overlapping evidence</strong> (tags reported by more than one source)
+  and records each provider's specific finding when a conflict is detected. A narrative summary is generated
+  in plain English. Absent records are never interpreted as confirmation of safety.
+</p>
+
+<!-- ════════════════════════════════ 11. RECOMMENDATION ═══ -->
+<h2><span class="num">11.</span>Recommendation Engine</h2>
+<p>
+  The recommendation engine generates a prioritised, deduplicated list of analyst actions based on:
+  the risk classification, the indicator type, the correlation agreement state, and which providers
+  returned data. All recommendations are rule-based and deterministic — no AI model is used.
+  Each recommendation includes a <em>rationale</em> and supporting evidence references.
+</p>
+<table>
+  <thead><tr><th>Risk Class</th><th>Indicator Type</th><th>Example Recommendations</th></tr></thead>
+  <tbody>
+    <tr><td><span class="badge b-critical">Critical</span></td><td>Any</td><td>Escalate immediately, isolate affected systems</td></tr>
+    <tr><td><span class="badge b-critical">Critical</span> / <span class="badge b-high">High</span></td><td>IP / IPv6</td><td>Block at perimeter firewall, review connection logs</td></tr>
+    <tr><td><span class="badge b-critical">Critical</span> / <span class="badge b-high">High</span></td><td>Domain</td><td>Block DNS resolution, search proxy logs</td></tr>
+    <tr><td><span class="badge b-critical">Critical</span> / <span class="badge b-high">High</span></td><td>Hash</td><td>Scan endpoints for file hash, quarantine identified files</td></tr>
+    <tr><td><span class="badge b-moderate">Moderate</span></td><td>Any</td><td>Monitor closely, cross-reference with internal logs</td></tr>
+    <tr><td><span class="badge b-low">Low</span></td><td>Any</td><td>Log and monitor — no immediate action required</td></tr>
+    <tr><td><span class="badge b-gray">Insufficient</span></td><td>Any</td><td>Gather additional intelligence, manual investigation</td></tr>
+    <tr><td>Any (conflict)</td><td>Any</td><td>Manually review conflicting source findings</td></tr>
+    <tr><td>Any (missing providers)</td><td>Any</td><td>Configure missing intelligence sources</td></tr>
+  </tbody>
+</table>
+<div class="callout">
+  The recommendation engine is advisory only. It does not automatically block IPs, disable accounts,
+  modify firewall rules, or take any disruptive action. The analyst remains in full control at all times.
+</div>
+
+<!-- ════════════════════════════════ 12. SECURITY ═══ -->
+<h2><span class="num">12.</span>Security Controls</h2>
+<table>
+  <thead><tr><th>Control</th><th>Implementation Detail</th><th>Status</th></tr></thead>
+  <tbody>
+    <tr><td><strong>SSRF Protection</strong></td><td>All private, loopback, and link-local IPv4/IPv6 ranges blocked using Python's <code>ipaddress</code> module before any provider query. Covers RFC 1918, 127.0.0.0/8, 169.254.0.0/16, ::1, fc00::/7, fe80::/10.</td><td><span class="badge b-ok">✓</span></td></tr>
+    <tr><td><strong>Input Validation</strong></td><td>Maximum 2048 character limit, type detection required, all values normalised before storage or use.</td><td><span class="badge b-ok">✓</span></td></tr>
+    <tr><td><strong>SQL Injection Prevention</strong></td><td>All database queries use SQLAlchemy ORM parameterised expressions. No raw SQL strings anywhere.</td><td><span class="badge b-ok">✓</span></td></tr>
+    <tr><td><strong>Rate Limiting</strong></td><td>200/day + 50/hour global; 30/minute on investigation endpoint; 10/minute on login endpoint via Flask-Limiter.</td><td><span class="badge b-ok">✓</span></td></tr>
+    <tr><td><strong>Secure HTTP Headers</strong></td><td><code>X-Content-Type-Options: nosniff</code>, <code>X-Frame-Options: DENY</code>, <code>X-XSS-Protection: 1; mode=block</code>, <code>Referrer-Policy: strict-origin-when-cross-origin</code>, <code>Cache-Control: no-store</code></td><td><span class="badge b-ok">✓</span></td></tr>
+    <tr><td><strong>Request Size Limit</strong></td><td><code>MAX_CONTENT_LENGTH = 1 MB</code> — oversized requests are rejected before parsing.</td><td><span class="badge b-ok">✓</span></td></tr>
+    <tr><td><strong>Secret Management</strong></td><td>All API keys stored in environment variables. Never logged, never returned to the frontend, never stored in the database. <code>.env.example</code> provided with placeholder values only.</td><td><span class="badge b-ok">✓</span></td></tr>
+    <tr><td><strong>Password Hashing</strong></td><td>Werkzeug <code>generate_password_hash</code> / <code>check_password_hash</code> using PBKDF2-SHA256.</td><td><span class="badge b-ok">✓</span></td></tr>
+    <tr><td><strong>Session Security</strong></td><td>HttpOnly cookie, SameSite=Lax, stable secret key, 8-hour lifetime, server-side session invalidation.</td><td><span class="badge b-ok">✓</span></td></tr>
+    <tr><td><strong>CORS</strong></td><td>Restricted to known localhost origins. <code>supports_credentials=True</code> required for session cookies.</td><td><span class="badge b-ok">✓</span></td></tr>
+    <tr><td><strong>Audit Logging</strong></td><td>All case status changes, note additions, and investigation creations are written to <code>ActivityEvent</code> with actor identity and UTC timestamp.</td><td><span class="badge b-ok">✓</span></td></tr>
+  </tbody>
+</table>
+
+<!-- ════════════════════════════════ 13. PAGES ═══ -->
+<h2><span class="num">13.</span>Application Pages</h2>
+<table>
+  <thead><tr><th>Page</th><th>Route</th><th>Description</th></tr></thead>
+  <tbody>
+    <tr>
+      <td><strong>SOC Dashboard</strong></td>
+      <td><code>/dashboard</code></td>
+      <td>6 live stat cards (total investigations, unique indicators, high-risk count, critical count, open cases, resolved cases), risk distribution pie chart, indicator type bar chart, intelligence source status panel, table of 10 most recent investigations.</td>
+    </tr>
+    <tr>
+      <td><strong>Investigate</strong></td>
+      <td><code>/investigate</code></td>
+      <td>Prominent indicator input form with 5 quick-example buttons, animated loading state, source query status panel (per-provider result with key fields), risk score panel with progress bar and contributing factors, correlation analysis panel, raw intelligence data panel, expandable recommendations list, JSON report export button.</td>
+    </tr>
+    <tr>
+      <td><strong>Cases</strong></td>
+      <td><code>/cases</code></td>
+      <td>Paginated case table with severity and status badges, indicator count per case. "New Case" modal with title, severity selector, and description fields.</td>
+    </tr>
+    <tr>
+      <td><strong>Case Detail</strong></td>
+      <td><code>/cases/:id</code></td>
+      <td>Case metadata header, linked indicators list, analyst notes section with author/timestamp, chronological activity timeline showing all state changes, status and severity update controls.</td>
+    </tr>
+    <tr>
+      <td><strong>History</strong></td>
+      <td><code>/history</code></td>
+      <td>Paginated investigation history with debounced search, indicator type filter, and risk class filter. Demo/live source labels on every row.</td>
+    </tr>
+    <tr>
+      <td><strong>Graph</strong></td>
+      <td><code>/graph</code></td>
+      <td>React Flow canvas with colour-coded nodes per indicator type, animated high-confidence edges, draggable layout, zoom/pan controls, minimap, and type colour legend.</td>
+    </tr>
+    <tr>
+      <td><strong>Feed</strong></td>
+      <td><code>/feed</code></td>
+      <td>Searchable, filterable, paginated feed of all investigated indicators. Columns: indicator value, type, risk class, risk score, data source, timestamp.</td>
+    </tr>
+    <tr>
+      <td><strong>Settings</strong></td>
+      <td><code>/settings</code></td>
+      <td>Live provider configuration status (configured/not configured) with API key setup instructions, demo mode indicator, application version, and database type.</td>
+    </tr>
+  </tbody>
+</table>
+
+<!-- ════════════════════════════════ 14. DEMO + TESTS ═══ -->
+<h2><span class="num">14.</span>Demo Data &amp; Test Results</h2>
+
+<h3>20 Pre-loaded Demo Scenarios</h3>
+<table>
+  <thead><tr><th>Indicator</th><th>Type</th><th>Risk</th><th>Scenario Description</th></tr></thead>
+  <tbody>
+    <tr><td><code>192.0.2.100</code></td><td>IPv4</td><td><span class="badge b-critical">Critical 88.5</span></td><td>C2 botnet — Emotet, both sources agree</td></tr>
+    <tr><td><code>198.51.100.77</code></td><td>IPv4</td><td><span class="badge b-critical">Critical 95.0</span></td><td>LockBit 3.0 ransomware distribution node</td></tr>
+    <tr><td><code>192.0.2.33</code></td><td>IPv4</td><td><span class="badge b-critical">Critical 85.0</span></td><td>APT41 infrastructure — PlugX espionage malware</td></tr>
+    <tr><td><code>198.51.100.88</code></td><td>IPv4</td><td><span class="badge b-critical">Critical 82.0</span></td><td>Active RIG exploit kit server — drive-by downloads</td></tr>
+    <tr><td><code>malware-c2-demo.test</code></td><td>Domain</td><td><span class="badge b-critical">Critical 92.0</span></td><td>APT28 Cobalt Strike C2 domain</td></tr>
+    <tr><td><code>44d88612fea8a8f3…</code></td><td>MD5</td><td><span class="badge b-critical">Critical 99.0</span></td><td>NanoCore RAT — 60/63 AV engines detect</td></tr>
+    <tr><td><code>275a021bbfb6489e…</code></td><td>SHA256</td><td><span class="badge b-critical">Critical 99.0</span></td><td>LockBit ransomware binary — 58/63 engines</td></tr>
+    <tr><td><code>http://malware-drop…</code></td><td>URL</td><td><span class="badge b-critical">Critical 96.0</span></td><td>AgentTesla dropper URL — active malware distribution</td></tr>
+    <tr><td><code>203.0.113.99</code></td><td>IPv4</td><td><span class="badge b-high">High 55.0</span></td><td>Phishing IP — both sources confirm phishing tags</td></tr>
+    <tr><td><code>192.0.2.55</code></td><td>IPv4</td><td><span class="badge b-high">High 75.0</span></td><td>DDoS amplification reflector</td></tr>
+    <tr><td><code>198.51.100.200</code></td><td>IPv4</td><td><span class="badge b-high">High 58.0</span></td><td>XMRig cryptominer pool endpoint</td></tr>
+    <tr><td><code>203.0.113.7</code></td><td>IPv4</td><td><span class="badge b-high">High 62.0</span></td><td>Active SSH brute-force scanner</td></tr>
+    <tr><td><code>phishing-bank-demo.test</code></td><td>Domain</td><td><span class="badge b-high">High 78.0</span></td><td>Banking credential phishing domain</td></tr>
+    <tr><td><code>203.0.113.42</code></td><td>IPv4</td><td><span class="badge b-moderate">Moderate 22.5</span></td><td>Conflicting sources — VT flags, OTX has no data</td></tr>
+    <tr><td><code>203.0.113.181</code></td><td>IPv4</td><td><span class="badge b-moderate">Moderate 35.0</span></td><td>Known spam sender — email blocklists</td></tr>
+    <tr><td><code>192.0.2.14</code></td><td>IPv4</td><td><span class="badge b-moderate">Moderate 28.0</span></td><td>Tor exit node — suspicious, not conclusive</td></tr>
+    <tr><td><code>aec070645fe53ee3…</code></td><td>SHA256</td><td><span class="badge b-moderate">Moderate 38.0</span></td><td>Suspicious binary — partial detection, 1 OTX pulse</td></tr>
+    <tr><td><code>198.51.100.1</code></td><td>IPv4</td><td><span class="badge b-low">Low 0</span></td><td>Clean IP — no malicious signals from either source</td></tr>
+    <tr><td><code>da39a3ee5e6b4b0d…</code></td><td>SHA1</td><td><span class="badge b-low">Low 0</span></td><td>Empty file SHA1 — universally clean</td></tr>
+    <tr><td><code>example-demo-safe.test</code></td><td>Domain</td><td><span class="badge b-gray">Insufficient</span></td><td>No data from either source — score cannot be determined</td></tr>
+  </tbody>
+</table>
+
+<h3>Automated Test Suite — 47/47 Passing</h3>
+<table>
+  <thead><tr><th>Test Class</th><th>Count</th><th>Coverage</th></tr></thead>
+  <tbody>
+    <tr><td><code>TestIndicatorDetection</code></td><td>9</td><td>All 7 indicator types correctly identified, plus unknown input and empty string returning None</td></tr>
+    <tr><td><code>TestNormalization</code></td><td>4</td><td>MD5 lowercase, domain lowercase, trailing dot removal, IPv6 compressed notation</td></tr>
+    <tr><td><code>TestSSRFProtection</code></td><td>5</td><td>RFC 1918 private ranges, loopback (127.0.0.1), link-local (169.254.x.x) blocked; public IPs allowed</td></tr>
+    <tr><td><code>TestRiskScoring</code></td><td>8</td><td>No data → insufficient, zero detections → low, high detections → high (&ge;50), score capped at 100, all 4 classification bands</td></tr>
+    <tr><td><code>TestCorrelationEngine</code></td><td>6</td><td>Both malicious agree, both benign agree, conflict detected, no data state, overlapping tag extraction, missing provider tracking</td></tr>
+    <tr><td><code>TestRecommendations</code></td><td>5</td><td>Critical escalation, low monitoring, insufficient evidence prompts, conflict review recommendation, deduplication of actions</td></tr>
+    <tr><td><code>TestAPIAuth</code></td><td>2</td><td>Invalid credentials return 401, auto-login hook grants dashboard access (200)</td></tr>
+    <tr><td><code>TestInputValidation</code></td><td>5</td><td>Empty indicator, too-long indicator, private IP SSRF blocked, loopback SSRF blocked, unrecognised format</td></tr>
+    <tr><td><code>TestDemoDataSeparation</code></td><td>1</td><td>All demo investigations have <code>is_demo=True</code> and <code>data_source="demo"</code></td></tr>
+    <tr><td><code>TestDatabasePersistence</code></td><td>2</td><td>Indicator persisted and retrievable, unique constraint raises IntegrityError on duplicate</td></tr>
+  </tbody>
+</table>
+<div class="callout success">
+  All 47 tests pass on Python 3.11 with pytest 9.1. Tests run against an in-memory SQLite database — no external services required.
+  Run with: <code>uv run python -m pytest test_sentinel_x.py -v</code>
+</div>
+
+<!-- ════════════════════════════════ 15. INSTALL ═══ -->
+<h2><span class="num">15.</span>Installation Guide</h2>
+
+<h3>Requirements</h3>
+<ul>
+  <li>Windows 10/11 (or Linux/macOS)</li>
+  <li><code>uv</code> package manager (already installed at <code>~/.local/bin/uv</code>)</li>
+  <li>Node.js 18+ (for frontend development / rebuilding only)</li>
+  <li>A modern browser (Chrome, Firefox, Edge)</li>
+</ul>
+
+<h3>Quick Start (One Step)</h3>
+<pre>
+# From the project directory d:\SENTINEl-X
+double-click  start.bat
+# Server starts at http://localhost:5000 and browser opens automatically
+</pre>
+
+<h3>Manual Start</h3>
+<pre>
+# Backend (from d:\SENTINEl-X)
+uv run python app.py
+# → Server running at http://localhost:5000
+
+# Frontend dev server (optional — only needed to edit frontend code)
+cd frontend
+npm run dev
+# → Dev server at http://localhost:5173
+
+# Tests
+uv run python -m pytest test_sentinel_x.py -v
+</pre>
+
+<h3>Environment Configuration</h3>
+<p>Copy <code>.env.example</code> to <code>.env</code> and fill in API keys to enable live intelligence queries:</p>
+<pre>
+VT_API_KEY=your_virustotal_api_key_here
+OTX_API_KEY=your_alienvault_otx_api_key_here
+DEMO_MODE=true
+SECRET_KEY=change-this-to-a-random-64-char-string
+</pre>
+
+<!-- ════════════════════════════════ 16. API ═══ -->
+<h2><span class="num">16.</span>API Reference</h2>
+<table>
+  <thead><tr><th>Method</th><th>Endpoint</th><th>Description</th></tr></thead>
+  <tbody>
+    <tr><td><code>POST</code></td><td><code>/api/auth/login</code></td><td>Authenticate with username/password. Returns user object and sets session cookie.</td></tr>
+    <tr><td><code>POST</code></td><td><code>/api/auth/logout</code></td><td>Clear the current session.</td></tr>
+    <tr><td><code>GET</code></td><td><code>/api/auth/me</code></td><td>Return the currently authenticated user.</td></tr>
+    <tr><td><code>POST</code></td><td><code>/api/investigate</code></td><td>Run a full investigation on a submitted indicator. Body: <code>{"indicator": "..."}</code></td></tr>
+    <tr><td><code>GET</code></td><td><code>/api/investigations</code></td><td>List investigations with pagination, search, and type/demo filters.</td></tr>
+    <tr><td><code>GET</code></td><td><code>/api/investigations/:id</code></td><td>Full investigation detail including source results and evidence items.</td></tr>
+    <tr><td><code>GET</code></td><td><code>/api/investigations/:id/compare</code></td><td>Compare the two most recent snapshots for an investigation.</td></tr>
+    <tr><td><code>GET</code></td><td><code>/api/cases</code></td><td>List cases with pagination and status filter.</td></tr>
+    <tr><td><code>POST</code></td><td><code>/api/cases</code></td><td>Create a new case. Body: <code>{"title", "severity", "description"}</code></td></tr>
+    <tr><td><code>GET</code></td><td><code>/api/cases/:id</code></td><td>Full case detail with indicators, notes, and activity timeline.</td></tr>
+    <tr><td><code>PATCH</code></td><td><code>/api/cases/:id</code></td><td>Update case status, severity, title, or description.</td></tr>
+    <tr><td><code>POST</code></td><td><code>/api/cases/:id/notes</code></td><td>Add an analyst note to a case.</td></tr>
+    <tr><td><code>POST</code></td><td><code>/api/cases/:id/indicators</code></td><td>Link an indicator to a case.</td></tr>
+    <tr><td><code>GET</code></td><td><code>/api/graph</code></td><td>Return nodes and edges for the relationship graph. Optionally filter by indicator_id.</td></tr>
+    <tr><td><code>GET</code></td><td><code>/api/reports/:id/json</code></td><td>Download a full JSON investigation report as a file attachment.</td></tr>
+    <tr><td><code>GET</code></td><td><code>/api/dashboard</code></td><td>Aggregate statistics, risk distribution, type distribution, recent investigations, provider status.</td></tr>
+    <tr><td><code>GET</code></td><td><code>/api/feed</code></td><td>Paginated, searchable threat intelligence feed with type and risk filters.</td></tr>
+    <tr><td><code>GET</code></td><td><code>/api/settings</code></td><td>Provider configuration status and application metadata. Never exposes key values.</td></tr>
+  </tbody>
+</table>
+
+<!-- ════════════════════════════════ 17. LIMITATIONS ═══ -->
+<h2><span class="num">17.</span>Known Limitations &amp; Future Work</h2>
+<table>
+  <thead><tr><th>Limitation</th><th>Reason</th><th>Suggested Future Improvement</th></tr></thead>
+  <tbody>
+    <tr><td>Risk scoring not statistically validated</td><td>No labelled ground-truth IoC dataset was used to calibrate weights</td><td>Evaluate against a labelled threat intelligence benchmark; tune weights based on precision/recall metrics</td></tr>
+    <tr><td>SQLite not suitable for production multi-user deployment</td><td>SQLite has limited concurrent write support</td><td>Change <code>DATABASE_URL</code> env variable to a PostgreSQL connection string — SQLAlchemy handles the rest</td></tr>
+    <tr><td>No PDF report export</td><td>Requires additional dependency (ReportLab / WeasyPrint)</td><td>Add PDF generation endpoint reusing the existing JSON report structure</td></tr>
+    <tr><td>No scheduled monitoring</td><td>Would require background task queue and careful rate-limit management</td><td>Integrate Celery + Redis for optional, rate-limited periodic re-investigation</td></tr>
+    <tr><td>Only two intelligence providers</td><td>Project scope</td><td>Add Shodan, AbuseIPDB, Hybrid Analysis, URLScan.io, MalwareBazaar</td></tr>
+    <tr><td>Graph edges limited to demo-seeded relationships</td><td>Real provider relationship data requires additional API response parsing</td><td>Parse VT related-objects and OTX referenced-indicators endpoints</td></tr>
+    <tr><td>Single-user demo mode (no per-user isolation)</td><td>Auto-login as admin for ease of demonstration</td><td>Restore full per-user session isolation for a multi-analyst deployment</td></tr>
+    <tr><td>No real-time notifications</td><td>WebSocket integration out of scope</td><td>Add Flask-SocketIO for live dashboard updates and investigation completion alerts</td></tr>
+  </tbody>
+</table>
+
+<!-- ════════════════════════════════ 18. CONCLUSION ═══ -->
+<h2><span class="num">18.</span>Conclusion</h2>
+<p>
+  SENTINEL-X 2.0 successfully delivers a complete, production-quality full-stack threat intelligence investigation
+  platform meeting all 15 stated objectives. The application demonstrates practical application of cybersecurity
+  engineering concepts including:
+</p>
+<ul>
+  <li><strong>Multi-source intelligence correlation</strong> with explicit conflict detection and uncertainty disclosure</li>
+  <li><strong>Explainable risk scoring</strong> where every contributing factor is visible to the analyst</li>
+  <li><strong>Structured evidence management</strong> with database persistence, provenance tracking, and audit logging</li>
+  <li><strong>Security-by-design</strong> with SSRF protection, input validation, SQL injection prevention, and rate limiting applied throughout</li>
+  <li><strong>Full-stack engineering</strong> spanning React/TypeScript frontend, Python/Flask backend, and SQLAlchemy ORM</li>
+</ul>
+<p>
+  The platform is built on stable, widely-used technologies and follows established software engineering practices
+  including separation of concerns, parameterised database queries, environment-based secret management,
+  and a 47-test automated test suite. It is fully demonstrable offline through its 20-scenario demo mode,
+  covering all risk classifications and indicator types without requiring any external API keys.
+</p>
+<p>
+  The primary differentiating features — the Correlation Engine's explicit conflict detection and the
+  Explainable Risk Scoring module's factor-by-factor transparency — address a genuine gap in freely available
+  threat intelligence tooling and demonstrate that automated security assessments can be made meaningfully
+  interpretable to human analysts.
+</p>
+
+<div class="callout success">
+  <strong>Final Summary:</strong> Full-stack web application &bull; Python 3.11 + Flask 3 &bull; React 18 + TypeScript &bull;
+  SQLite with 12 ORM models &bull; 18 REST API endpoints &bull; 8 application pages &bull;
+  20 pre-loaded demo investigations &bull; 47 automated tests — all passing &bull;
+  No external dependencies required for demonstration.
+</div>
+
+<div class="footer">
+  SENTINEL-X 2.0 &mdash; Intelligent Cyber Threat Intelligence, Correlation &amp; Investigation Platform<br/>
+  Academic Project Report &bull; Cyber Security &bull; Made with IBM Bob
+</div>
+
+</body>
+</html>
